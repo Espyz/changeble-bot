@@ -21,7 +21,7 @@ def get_text_messages(message):
         file = open(f'Schemes/schema{last_schema}.json', 'r', encoding='utf-8')
         node_list = json.load(file)
         file.close()
-        start_id = min(list(node_list.keys()))
+        start_id = str(min([int(i) for i in list(node_list.keys())]))
         # Создание меню с командами
         bot.set_my_commands(
             commands=[
@@ -37,6 +37,7 @@ def get_text_messages(message):
 
 @bot.callback_query_handler(func=lambda call: True, )
 def callback_worker(call):
+    bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
     [ node_id, schema_id ] = call.data.split(' ')
 
     file = open(f'Schemes/schema{schema_id}.json', 'r', encoding='utf-8')
