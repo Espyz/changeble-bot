@@ -6,12 +6,20 @@ class Database:
         self.conn.autocommit = True
 
     def query(self, request, params = []):
-        cursor = self.conn.cursor()
-        if len(params) == 0:
-            cursor.execute(request)
-        else:
-            cursor.execute(request, params)
-        return cursor.fetchall()    
+        try:
+            cursor = self.conn.cursor()
+            if len(params) == 0:
+                cursor.execute(request)
+            else:
+                cursor.execute(request, params)
+                
+            columns = [desc[0] for desc in cursor.description]
+            results = cursor.fetchall()
+            json_result = [dict(zip(columns, row)) for row in results]
+        except Exception as e:
+            print(f"Ошибка выполнения запроса: {e}")
+            return None
+        return json_result
     
     def release(self):
         self.conn.close()

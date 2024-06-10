@@ -77,14 +77,14 @@ def bot_schema():
     client = Database()
     try:
         result = client.query('INSERT INTO connects ("botId", "schemeId") VALUES (%s, %s) RETURNING id', [ object['botId'], object['schemeId'] ])
-        id = result[0][0]
+        id = result[0]["id"]
         if len(result) > 0:
             bot_params = client.query('SELECT b."botToken", b."botName", s.back_schema FROM connects c INNER JOIN schemes s ON s.id = c."schemeId" INNER JOIN bots b ON b.id = c."botId" WHERE c.id = %s', [ id ])
             if (len(bot_params) > 0):
-                bot = Bot(bot_params[0][0], bot_params[0][2])
+                bot = Bot(bot_params[0]["botToken"], bot_params[0]["back_schema"])
                 t1 = Thread(target=bot.start)
                 t1.start()
-                activeBotList[bot_params[0][1]] = bot
+                activeBotList[bot_params[0]["botName"]] = bot
                 data = { 'message': 'success', 'status_code': 200 }
             else: 
                 data = { 'message': 'Не найдена информация о боте', 'status_code': 409 }
@@ -96,5 +96,20 @@ def bot_schema():
         client.release()
     return data
 
+@app.route('/bot/get', methods=['GET'])
+def get_bot_list():
+    data = { 'message': 'error', 'status_code': 400 }
+    client = Database()
+    try:
+        result = client.query('SELECT DISTINCT * FROM bots')
+        if len(result) > 0:
+            data = { 'message': result, 'status_code': 200 }
+        else:
+            data = { 'message': 'Не найдены сохранённые боты', 'status_code': 409 }
+    except Exception as err:
+        print(err)
+    finally:
+        client.release()
+    return data
 
 app.run(debug=True)
