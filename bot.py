@@ -1,6 +1,5 @@
 import telebot
 from telebot import types
-import inspect
 
 class Bot:
     def __init__(self, token, schema):
